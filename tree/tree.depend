@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1470736875 source:c:\users\Святослав\decision_tree\tree\main.cpp
+	<algorithm>
+	<fstream>
+	<iostream>
+	<map>
+	<set>
+	<vector>
+
