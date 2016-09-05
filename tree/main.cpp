@@ -5,27 +5,28 @@
 #include <set>
 #include <vector>
 
-struct object {
+struct Object {
     std::vector<double> attributes;
     unsigned int classification;
 };
 
-class node {
+class Node {
 private:
-    node* left = NULL;
-    node* right = NULL;
+    Node* left = NULL;
+    Node* right = NULL;
     double condition;
     unsigned int attr_cond;
     unsigned int pred_class;
 public:
-    node() {}
-    ~node() {
+    Node() {}
+    ~Node() {
         delete left;
         delete right;
     }
-    std::vector<object> objects;
+    std::vector<Object> objects;
     void learn() {
         double gini = 0;
+//counting gini for this node
         std::map<unsigned int, unsigned int> num_class;
         for (size_t i = 0; i < objects.size(); ++i) {
             num_class[objects[i].classification] += 1;
@@ -38,17 +39,19 @@ public:
                 pred_class = it->first;
             }
         }
+
         if (gini < 0.2){
             return;
         }
         double best_cond;
         unsigned int best_cond_attr;
         double best_dgini = 0;
+//looking for the best attribute
         for (size_t i = 0; i < objects[0].attributes.size(); ++i) {
             std::map<unsigned int, unsigned int> right_classes = num_class;
             std::map<unsigned int, unsigned int> left_classes;
             sort(objects.begin(), objects.end(),
-                 [i](object first, object second) {
+                 [i](Object first, Object second) {
                 return (first.attributes[i] <= second.attributes[i]);
             });
             for (size_t j = 0; j < objects.size() - 1; ++j) {
@@ -75,30 +78,31 @@ public:
                 }
             }
         }
+
         if (best_dgini > 0) {
             condition = best_cond;
             attr_cond = best_cond_attr;
         }
-        left = new node;
-        right = new node;
+        left = new Node;
+        right = new Node;
         for (size_t i = 0; i < objects.size(); ++i) {
             if (objects[i].attributes[attr_cond] <= condition) {
-                (*left).objects.push_back(objects[i]);
+                left->objects.push_back(objects[i]);
             } else {
-                (*right).objects.push_back(objects[i]);
+                right->objects.push_back(objects[i]);
             }
         }
-        (*left).learn();
-        (*right).learn();
+        left->learn();
+        right->learn();
     }
-    unsigned int give_answer (object foo) {
+    unsigned int give_answer (Object object_n) {
         if (left == NULL) {
             return pred_class;
         }
-        if (foo.attributes[attr_cond] <= condition) {
-            return (*left).give_answer(foo);
+        if (object_n.attributes[attr_cond] <= condition) {
+            return left->give_answer(object_n);
         }
-        return (*right).give_answer(foo);
+        return right->give_answer(object_n);
     }
 };
 
@@ -107,10 +111,10 @@ int main()
     std::ifstream fin ("input.txt");
     std::ofstream fout ("output.txt");
     size_t num, num_obj;
-    node root;
+    Node root;
     fin >> num >> num_obj;
     for(size_t i = 0; i < num; ++i) {
-        object input;
+        Object input;
         for (size_t j = 0; j < num_obj; ++j) {
             double inp;
             fin >> inp;
@@ -122,7 +126,7 @@ int main()
     root.learn();
     fin >> num;
     for(size_t i = 0; i < num; ++i) {
-        object input;
+        Object input;
         for (size_t j = 0; j < num_obj; ++j) {
             double inp;
             fin >> inp;
